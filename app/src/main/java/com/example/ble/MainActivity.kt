@@ -6,8 +6,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,6 +19,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -34,7 +38,7 @@ import com.inuker.bluetooth.library.search.response.SearchResponse
 import com.inuker.bluetooth.library.utils.BluetoothLog
 import com.veepoo.protocol.VPOperateManager
 
-data class blModel(
+data class BlModel(
     val name: String,
     val address: String
 )
@@ -106,8 +110,8 @@ fun MainScreen() {
     }
 
     val context = LocalContext.current
-    var list by remember {
-        mutableStateOf<ArrayList<blModel>>(arrayListOf())
+    var list = remember {
+        mutableStateListOf<BlModel>()
     }
     val mClient = BluetoothClient(context);
     val request = SearchRequest.Builder()
@@ -121,9 +125,11 @@ fun MainScreen() {
 
             mClient.search(request, object : SearchResponse {
                 override fun onSearchStarted() {
+                    status = "onSearchStarted"
                 }
 
                 override fun onDeviceFounded(device: SearchResult) {
+                    status = "onDeviceFounded"
                     val beacon = Beacon(device.scanRecord)
                     device.name
                     BluetoothLog.v(
@@ -134,19 +140,29 @@ fun MainScreen() {
                             beacon.toString()
                         )
                     )
-                    status = device.address
-                    list.add(blModel(name = device.name, address = device.address))
+
+                    list.find { f -> f.address != device.address }?.let {
+                        list.add(BlModel(name = device.name, address = device.address))
+                    } ?: run {
+                        list.add(BlModel(name = device.name, address = device.address))
+                    }
+
                 }
 
                 override fun onSearchStopped() {
+                    status = "onSearchStopped"
                 }
 
                 override fun onSearchCanceled() {
+                    status = "onSearchCanceled"
                 }
             })
         },
         callbackStop = {
             mClient.stopSearch()
+        },
+        callbackClear = {
+            list.clear()
         },
         listBL = list
     )
@@ -159,7 +175,8 @@ fun MainScreenContent(
     status: String = "",
     callbackStart: () -> Unit = {},
     callbackStop: () -> Unit = {},
-    listBL: ArrayList<blModel> = arrayListOf()
+    callbackClear: () -> Unit = {},
+    listBL: List<BlModel> = arrayListOf()
 ) {
     Column(
         modifier = Modifier
@@ -172,21 +189,35 @@ fun MainScreenContent(
             text = status,
             modifier = Modifier
         )
-        Button(
-            onClick = {
-                callbackStart()
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+            Button(
+                onClick = {
+                    callbackStart()
+                }
+            ) {
+                Text("start")
             }
-        ) {
-            Text("start")
-        }
-        Button(
-            onClick = {
-                callbackStop()
+            Button(
+                onClick = {
+                    callbackStop()
+                }
+            ) {
+                Text("stop")
             }
-        ) {
-            Text("stop")
+            Button(
+                onClick = {
+                    callbackClear()
+                }
+            ) {
+                Text("clear")
+            }
         }
-        LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
             items(listBL) {
                 Text("name" + it.name + " address" + it.address)
             }
