@@ -1,5 +1,6 @@
 package com.example.ble
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -60,26 +61,26 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         VPOperateManager.getInstance().init(this)
 
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-//            ActivityCompat.requestPermissions(
-//                this, arrayOf<String>(
-//                    android.Manifest.permission.BLUETOOTH_SCAN,
-//                    android.Manifest.permission.BLUETOOTH_CONNECT,
-//                    android.Manifest.permission.ACCESS_COARSE_LOCATION,
-//                    android.Manifest.permission.ACCESS_FINE_LOCATION
-//                ), 200
-//            )
-//        }
-//
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-//            ActivityCompat.requestPermissions(
-//                this, arrayOf<String>(
-//
-//                    android.Manifest.permission.ACCESS_BACKGROUND_LOCATION
-//                ), 200
-//            )
-//        }
-//
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            ActivityCompat.requestPermissions(
+                this, arrayOf<String>(
+                    android.Manifest.permission.BLUETOOTH_SCAN,
+                    android.Manifest.permission.BLUETOOTH_CONNECT,
+                    android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                    android.Manifest.permission.ACCESS_FINE_LOCATION
+                ), 200
+            )
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ActivityCompat.requestPermissions(
+                this, arrayOf<String>(
+
+                    android.Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                ), 200
+            )
+        }
+
         ActivityCompat.requestPermissions(
             this, arrayOf<String>(
                 android.Manifest.permission.ACCESS_COARSE_LOCATION,
